@@ -966,7 +966,9 @@ public class LinkedList<E>
                 throw new ConcurrentModificationException();
         }
     }
-
+    /**
+     * 双向节点
+     */
     private static class Node<E> {
         E item;
         Node<E> next;
