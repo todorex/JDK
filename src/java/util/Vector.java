@@ -90,7 +90,7 @@ public class Vector<E>
      * and is at least large enough to contain all the vector's elements.
      *
      * <p>Any array elements following the last element in the Vector are null.
-     *
+     * 数据容器
      * @serial
      */
     protected Object[] elementData;
@@ -99,7 +99,7 @@ public class Vector<E>
      * The number of valid components in this {@code Vector} object.
      * Components {@code elementData[0]} through
      * {@code elementData[elementCount-1]} are the actual items.
-     *
+     * 数据实际数量
      * @serial
      */
     protected int elementCount;
@@ -109,7 +109,7 @@ public class Vector<E>
      * incremented when its size becomes greater than its capacity.  If
      * the capacity increment is less than or equal to zero, the capacity
      * of the vector is doubled each time it needs to grow.
-     *
+     * 向量的大小大于其容量时，容量自动增加的量
      * @serial
      */
     protected int capacityIncrement;
@@ -154,6 +154,7 @@ public class Vector<E>
      * zero.
      */
     public Vector() {
+        // 默认大小为10
         this(10);
     }
 
@@ -256,6 +257,7 @@ public class Vector<E>
 
     private void grow(int minCapacity) {
         // overflow-conscious code
+        // 容量默认两倍增长
         int oldCapacity = elementData.length;
         int newCapacity = oldCapacity + ((capacityIncrement > 0) ?
                                          capacityIncrement : oldCapacity);

@@ -55,6 +55,8 @@ import java.util.function.UnaryOperator;
  * A thread-safe variant of {@link java.util.ArrayList} in which all mutative
  * operations ({@code add}, {@code set}, and so on) are implemented by
  * making a fresh copy of the underlying array.
+ * ArrayList 的一个线程安全的变体，
+ * 其中所有可变操作（add、set 等等）都是通过对底层数组进行一次新的复制来实现的
  *
  * <p>This is ordinarily too costly, but may be <em>more</em> efficient
  * than alternatives when traversal operations vastly outnumber
@@ -83,6 +85,9 @@ import java.util.function.UnaryOperator;
  * <p>This class is a member of the
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
+ *
+ *
+ *  CopyOnWriteArrayList 不适合内存敏感以及对实时性要求很高的场景
  *
  * @since 1.5
  * @author Doug Lea
@@ -427,15 +432,20 @@ public class CopyOnWriteArrayList<E>
     /**
      * Appends the specified element to the end of this list.
      *
+     * 写操作需要加锁，防止并发写入时导致写入数据丢失
+     * 写操作结束之后需要把原始数组指向新的复制数组
+     *
      * @param e element to be appended to this list
      * @return {@code true} (as specified by {@link Collection#add})
      */
     public boolean add(E e) {
+        // 获得可重入锁
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
             Object[] elements = getArray();
             int len = elements.length;
+            // 写操作在一个复制的数组上进行，读操作还是在原始数组中进行，读写分离，互不影响
             Object[] newElements = Arrays.copyOf(elements, len + 1);
             newElements[len] = e;
             setArray(newElements);
