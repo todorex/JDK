@@ -200,18 +200,20 @@ public class LinkedHashMap<K,V>
 
     /**
      * The head (eldest) of the doubly linked list.
+     * 双向链表的头，最久访问的
      */
     transient LinkedHashMap.Entry<K,V> head;
 
     /**
      * The tail (youngest) of the doubly linked list.
+     * 双向链表的尾，最新访问的
      */
     transient LinkedHashMap.Entry<K,V> tail;
 
     /**
      * The iteration ordering method for this linked hash map: <tt>true</tt>
      * for access-order, <tt>false</tt> for insertion-order.
-     *
+     * 默认迭代顺序是按照插入顺序
      * @serial
      */
     final boolean accessOrder;
@@ -219,11 +221,15 @@ public class LinkedHashMap<K,V>
     // internal utilities
 
     // link at the end of list
+    // 将节点连接在链表的尾部
     private void linkNodeLast(LinkedHashMap.Entry<K,V> p) {
+        // 拿到为节点
         LinkedHashMap.Entry<K,V> last = tail;
         tail = p;
+        // 如果尾节点不存在，则代表了链表未生成
         if (last == null)
             head = p;
+        // 设置指针
         else {
             p.before = last;
             last.after = p;
@@ -252,9 +258,12 @@ public class LinkedHashMap<K,V>
         head = tail = null;
     }
 
+    // 多态调用的方法
     Node<K,V> newNode(int hash, K key, V value, Node<K,V> e) {
+        // 生成LinkedHashMap需要的节点
         LinkedHashMap.Entry<K,V> p =
             new LinkedHashMap.Entry<K,V>(hash, key, value, e);
+        // 将 Entry 接在双向链表的尾部
         linkNodeLast(p);
         return p;
     }
@@ -280,48 +289,65 @@ public class LinkedHashMap<K,V>
         return t;
     }
 
+    // 在删除链表之后，调整链表结构
     void afterNodeRemoval(Node<K,V> e) { // unlink
+        // 拿到删除节点以及它的前驱节点和后继节点
         LinkedHashMap.Entry<K,V> p =
             (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
+        // 将这两个指针置空
         p.before = p.after = null;
+        // 如果前驱节点为空，则为头节点
         if (b == null)
             head = a;
         else
+            // 连接前后两个界定啊
             b.after = a;
+        // 如果前驱节点为空，则为尾节点
         if (a == null)
             tail = b;
         else
             a.before = b;
     }
 
+    // 可用于实现LRU缓存，evict就表示删除的意思
     void afterNodeInsertion(boolean evict) { // possibly remove eldest
         LinkedHashMap.Entry<K,V> first;
+        // 根据条件判断是否移除最近最少被访问的节点，主要就是removeEldestEntry方法
         if (evict && (first = head) != null && removeEldestEntry(first)) {
             K key = first.key;
+            // 删除节点
             removeNode(hash(key), key, null, false, true);
         }
     }
 
+    // 访问回调方法来调整链表位置
     void afterNodeAccess(Node<K,V> e) { // move node to last
         LinkedHashMap.Entry<K,V> last;
+        // 当accessOrder为ture 且 访问的不是尾部节点时才进行下面的一顿操作
         if (accessOrder && (last = tail) != e) {
+            // 拿到访问节点以及它的前驱节点和后继节点
             LinkedHashMap.Entry<K,V> p =
                 (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
+            // 后继节点置空
             p.after = null;
+            // 前驱节点为头节点
             if (b == null)
                 head = a;
             else
                 b.after = a;
+            // 这里的if/else感觉也都没用，因为都确定不是尾节点了
             if (a != null)
                 a.before = b;
             else
                 last = b;
+            // 表示不会会空，因为都访问到元素了
             if (last == null)
                 head = p;
             else {
                 p.before = last;
                 last.after = p;
             }
+            // 将访问节点放到尾部
             tail = p;
             ++modCount;
         }
