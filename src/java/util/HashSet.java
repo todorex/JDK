@@ -91,9 +91,10 @@ public class HashSet<E>
     implements Set<E>, Cloneable, java.io.Serializable
 {
     static final long serialVersionUID = -5024744406713321676L;
-
+    // 真的操作的执行者
     private transient HashMap<E,Object> map;
 
+    // 定义一个"虚拟"的Object对象作为HashMap的value
     // Dummy value to associate with an Object in the backing Map
     private static final Object PRESENT = new Object();
 
