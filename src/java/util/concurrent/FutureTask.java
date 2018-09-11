@@ -115,8 +115,10 @@ public class FutureTask<V> implements RunnableFuture<V> {
     @SuppressWarnings("unchecked")
     private V report(int s) throws ExecutionException {
         Object x = outcome;
+        // 如果状态为NORMAL，则返回值
         if (s == NORMAL)
             return (V)x;
+        // 如果状态为CACELLED，则代表任务呗取消，抛出异常
         if (s >= CANCELLED)
             throw new CancellationException();
         throw new ExecutionException((Throwable)x);
@@ -149,6 +151,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * @throws NullPointerException if the runnable is null
      */
     public FutureTask(Runnable runnable, V result) {
+        // 将Runnable封装成callable
         this.callable = Executors.callable(runnable, result);
         this.state = NEW;       // ensure visibility of callable
     }
@@ -186,9 +189,12 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * @throws CancellationException {@inheritDoc}
      */
     public V get() throws InterruptedException, ExecutionException {
+        // 拿到状态
         int s = state;
+        // 未完成，则阻塞等待完成，这里可以设置超时时间
         if (s <= COMPLETING)
             s = awaitDone(false, 0L);
+        // 还需要根据状态判断是否返回值
         return report(s);
     }
 
@@ -253,24 +259,30 @@ public class FutureTask<V> implements RunnableFuture<V> {
     }
 
     public void run() {
+        // 状态不为NEW或者UNSAFE不成功，则运行失败
         if (state != NEW ||
             !UNSAFE.compareAndSwapObject(this, runnerOffset,
                                          null, Thread.currentThread()))
             return;
         try {
+            // 最终又调用到了FutureTask保证的Callable对象
             Callable<V> c = callable;
+            // callable不为空且状态为NEW
             if (c != null && state == NEW) {
                 V result;
                 boolean ran;
                 try {
+                    // 得到返回值
                     result = c.call();
                     ran = true;
                 } catch (Throwable ex) {
                     result = null;
                     ran = false;
+                    // 如果有异常，设置异常
                     setException(ex);
                 }
                 if (ran)
+                    // 设置返回值
                     set(result);
             }
         } finally {
